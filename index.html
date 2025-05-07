@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consulta de Saldo</title>
+
+  <!-- TailwindCSS para estilização -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- FontAwesome para ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Arquivo de estilos personalizados -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+  <!-- Cabeçalho com gradiente -->
+  <header class="header-gradient text-white py-4 shadow-md">
+    <div class="container mx-auto px-4 flex items-center">
+      <i class="fas fa-recycle text-2xl mr-3"></i>
+      <h1 class="text-xl font-bold">Sistema de Gestão de Resíduos</h1>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-6">
+
+    <!-- Formulário de Login -->
+    <div id="formularioLogin" class="max-w-md mx-auto bg-white mt-6 p-8 rounded-xl shadow-lg border-t-4 border-green-600">
+
+      <!-- Título do formulário -->
+      <div class="text-center mb-6">
+        <i class="fas fa-user-circle text-green-600 text-4xl mb-2"></i>
+        <h2 class="text-2xl font-bold header-text-gradient">Consulta de Saldo</h2>
+        <p class="text-gray-500">Entre com suas credenciais para consultar</p>
+      </div>
+
+      <!-- Campo Usuário -->
+      <div class="mb-4">
+        <label class="block font-medium mb-1" for="usuario">Usuário</label>
+        <div class="relative">
+          <div class="field-indicator"></div>
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-user"></i>
+          </span>
+          <input
+            id="usuario"
+            type="text"
+            placeholder="Digite o usuário"
+            class="w-full border border-gray-300 pl-10 px-4 py-2 rounded-lg focus:outline-none focus-style"
+          />
+        </div>
+      </div>
+
+      <!-- Campo Senha -->
+      <div class="mb-6">
+        <label class="block font-medium mb-1" for="senha">Senha</label>
+        <div class="relative">
+          <div class="field-indicator"></div>
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-lock"></i>
+          </span>
+          <input
+            id="senha"
+            type="password"
+            placeholder="Sua senha"
+            class="w-full border border-gray-300 pl-10 px-4 py-2 rounded-lg focus:outline-none focus-style"
+          />
+        </div>
+      </div>
+
+      <!-- Botão de consulta -->
+      <button
+        id="btnConsultar"
+        class="w-full orange-button text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center"
+      >
+        <i class="fas fa-search mr-2"></i> Consultar
+      </button>
+    </div>
+
+    <!-- Resultado da Consulta -->
+    <div id="resultadoConsulta" class="max-w-5xl mx-auto mt-8 hidden">
+      <div class="header-gradient text-white p-6 rounded-t-xl shadow">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-2xl font-bold flex items-center">
+              <i class="fas fa-file-invoice-dollar mr-2"></i> Consulta de Saldo
+            </h2>
+            <p id="clienteNome" class="mt-2">Cliente: -</p>
+            <p id="clienteUsuario">Usuário: -</p>
+            <p id="dataGeracao" class="text-sm mt-1">• Gerado em -</p>
+          </div>
+
+          <button
+            id="btnNovaConsulta"
+            class="orange-button text-white font-semibold px-4 py-2 rounded hover:bg-orange-500 transition-colors flex items-center"
+          >
+            <i class="fas fa-redo-alt mr-2"></i> Nova Consulta
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white shadow p-6 rounded-b-xl">
+        <h2 class="text-xl font-semibold border-b pb-2 mb-6 flex items-center header-text-gradient">
+          <i class="fas fa-chart-pie mr-2 text-green-600"></i> Saldo Atual
+        </h2>
+
+        <!-- Cards de saldo -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div class="p-6 border rounded-lg shadow-sm bg-gray-50 hover:shadow-md transition-shadow border-l-4 border-l-green-600">
+            <div class="flex items-center mb-2">
+              <i class="fas fa-dumpster text-green-600 mr-2"></i>
+              <p class="font-bold text-gray-600">Caçamba</p>
+            </div>
+            <p id="saldoCacamba" class="text-3xl text-green-700 font-bold">-</p>
+          </div>
+
+          <div class="p-6 border rounded-lg shadow-sm bg-gray-50 hover:shadow-md transition-shadow border-l-4 border-l-orange-500">
+            <div class="flex items-center mb-2">
+              <i class="fas fa-weight text-orange-600 mr-2"></i>
+              <p class="font-bold text-gray-600">Tonelada</p>
+            </div>
+            <p id="saldoTonelada" class="text-3xl text-orange-600 font-bold">-</p>
+          </div>
+        </div>
+
+        <!-- Detalhamento -->
+        <h2 class="text-xl font-semibold border-b pb-2 mb-4 flex items-center header-text-gradient">
+          <i class="fas fa-list-alt mr-2 text-green-600"></i> Detalhamento por Boleto
+        </h2>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full border text-sm rounded-lg overflow-hidden">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="text-left px-4 py-3 font-semibold">Nº Boleto</th>
+                <th class="text-left px-4 py-3 font-semibold">Status</th>
+                <th class="text-left px-4 py-3 font-semibold">Data de Emissão</th>
+                <th class="text-left px-4 py-3 font-semibold">Saldo</th>
+                <th class="text-left px-4 py-3 font-semibold">Tipo</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaResultados"></tbody>
+          </table>
+        </div>
+
+        <!-- Adicione este código ao final do main (antes do fechamento), logo após a div tabelaResultados -->
+
+<!-- Botão de Solicitar Saldo (substitui o badge PROCESSADO) -->
+<div class="flex justify-end mt-4">
+  <button
+    id="btnSolicitarSaldo"
+    class="green-button text-white font-semibold px-6 py-2 rounded-full hover:bg-green-700 transition-colors flex items-center"
+  >
+    <i class="fas fa-plus-circle mr-2"></i> Solicitar Boleto
+  </button>
+</div>
+
+<!-- Modal de Formulário de Solicitação -->
+<div id="modalSolicitacao" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
+    <div class="flex justify-between items-center mb-4 border-b pb-2">
+      <h3 class="text-xl font-bold header-text-gradient">
+        <i class="fas fa-file-invoice mr-2"></i>Solicitação de Saldo
+      </h3>
+      <button id="btnFecharModal" class="text-gray-500 hover:text-gray-800">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    
+    <form id="formSolicitacao" class="space-y-4">
+      <!-- Nome da Empresa (preenchido automaticamente) -->
+      <div>
+        <label class="block font-medium mb-1" for="empresa">Nome da Empresa</label>
+        <div class="relative">
+          <div class="field-indicator"></div>
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-building"></i>
+          </span>
+          <input
+            id="empresa"
+            type="text"
+            class="w-full border border-gray-300 pl-10 px-4 py-2 rounded-lg focus:outline-none focus-style"
+            readonly
+          />
+        </div>
+      </div>
+      
+      <!-- CNPJ/CPF -->
+      <div>
+        <label class="block font-medium mb-1" for="documento">CNPJ/CPF</label>
+        <div class="relative">
+          <div class="field-indicator"></div>
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-id-card"></i>
+          </span>
+          <input
+            id="documento"
+            type="text"
+            placeholder="Digite o CNPJ ou CPF"
+            class="w-full border border-gray-300 pl-10 px-4 py-2 rounded-lg focus:outline-none focus-style"
+          />
+        </div>
+      </div>
+      
+      <!-- Whatsapp -->
+      <div>
+        <label class="block font-medium mb-1" for="whatsapp">Whatsapp</label>
+        <div class="relative">
+          <div class="field-indicator"></div>
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fab fa-whatsapp"></i>
+          </span>
+          <input
+            id="whatsapp"
+            type="text"
+            placeholder="Digite seu número com DDD"
+            class="w-full border border-gray-300 pl-10 px-4 py-2 rounded-lg focus:outline-none focus-style"
+          />
+        </div>
+      </div>
+      
+      <!-- Email -->
+      <div>
+        <label class="block font-medium mb-1" for="email">E-mail</label>
+        <div class="relative">
+          <div class="field-indicator"></div>
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-envelope"></i>
+          </span>
+          <input
+            id="email"
+            type="email"
+            placeholder="Digite seu e-mail"
+            class="w-full border border-gray-300 pl-10 px-4 py-2 rounded-lg focus:outline-none focus-style"
+          />
+        </div>
+      </div>
+      
+      <!-- Tipo de Saldo -->
+      <div>
+        <label class="block font-medium mb-1" for="tipoSaldo">Tipo</label>
+        <div class="relative">
+          <div class="field-indicator"></div>
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-tag"></i>
+          </span>
+          <select
+            id="tipoSaldo"
+            class="w-full border border-gray-300 pl-10 px-4 py-2 rounded-lg focus:outline-none focus-style appearance-none"
+          >
+            <option value="">Selecione o tipo</option>
+            <option value="RCC-CAÇAMBA">RCC-Caçamba</option>
+            <option value="RSU-TONELADA">RSU-Tonelada</option>
+          </select>
+          <span class="absolute right-3 top-2.5 text-gray-400 pointer-events-none">
+            <i class="fas fa-chevron-down"></i>
+          </span>
+        </div>
+      </div>
+      
+      <!-- Quantidade -->
+      <div>
+        <label class="block font-medium mb-1" for="quantidade">Quantidade</label>
+        <div class="relative">
+          <div class="field-indicator"></div>
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-calculator"></i>
+          </span>
+          <input
+            id="quantidade"
+            type="number"
+            min="1"
+            placeholder="Digite a quantidade"
+            class="w-full border border-gray-300 pl-10 px-4 py-2 rounded-lg focus:outline-none focus-style"
+          />
+        </div>
+      </div>
+      
+      <!-- Valor (calculado automaticamente) -->
+      <div>
+        <label class="block font-medium mb-1" for="valor">Valor Total</label>
+        <div class="relative">
+          <div class="field-indicator"></div>
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-dollar-sign"></i>
+          </span>
+          <input
+            id="valor"
+            type="text"
+            readonly
+            class="w-full border border-gray-300 pl-10 px-4 py-2 rounded-lg focus:outline-none focus-style bg-gray-50"
+          />
+        </div>
+      </div>
+      
+      <!-- Observação -->
+      <div>
+        <label class="block font-medium mb-1" for="observacao">Observação</label>
+        <div class="relative">
+          <div class="field-indicator h-[calc(100%-8px)] mt-1"></div>
+          <textarea
+            id="observacao"
+            placeholder="Digite sua observação (opcional)"
+            class="w-full border border-gray-300 pl-6 px-4 py-2 rounded-lg focus:outline-none focus-style min-h-[80px]"
+          ></textarea>
+        </div>
+      </div>
+      
+      <!-- Botões de ação -->
+      <div class="flex justify-end space-x-3 pt-4 border-t">
+        <button
+          type="button"
+          id="btnCancelarSolicitacao"
+          class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          id="btnEnviarSolicitacao"
+          class="green-button text-white font-semibold px-6 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
+        >
+          <i class="fas fa-paper-plane mr-2"></i> Enviar Solicitação
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+        <div class="flex justify-end mt-4">
+          <span class="status-badge">PROCESSADO</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Rodapé -->
+  <footer class="header-gradient text-white py-4 mt-12">
+    <div class="container mx-auto px-4 text-center">
+      <p>&copy; 2025 Sistema de Gestão de Resíduos. Todos os direitos reservados.</p>
+      <p>&copy; José Victor De Oliveira.</p>
+    </div>
+  </footer>
+
+  <!-- Tela de carregamento -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+      <div class="loading-spinner mb-4"></div>
+      <p class="text-gray-700">Carregando dados...</p>
+    </div>
+  </div>
+
+  <!-- Script principal -->
+  <script src="main.js"></script>
+</body>
+</html>
