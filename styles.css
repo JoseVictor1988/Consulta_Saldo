@@ -14,18 +14,6 @@
   background: #f57c00; /* Laranja mais escuro no hover */
 }
 
-/* Indicador verde à esquerda dos campos de input */
-/* Corrigido o nome da classe */
-/*.field-indicator {
-  position: absolute;
-  left: 0;
-  top: 0; /* Ajustado para 0 */
-  height: 100%; /* Ajustado para 100% */
-  width: 6px;
-  background: #00814d;
-  border-radius: 100px 0 0 100px;
-  margin-left: 0;
-}
 
 /* Estilo de foco nos inputs */
 .focus-style:focus {
