@@ -16,7 +16,7 @@
 
 /* Indicador verde à esquerda dos campos de input */
 /* Corrigido o nome da classe */
-.field-indicator {
+/*.field-indicator {
   position: absolute;
   left: 0;
   top: 0; /* Ajustado para 0 */
