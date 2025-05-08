@@ -10,16 +10,21 @@
   background: #ff9800;
   transition: all 0.3s ease;
 }
+
 .orange-button:hover {
-  background: #f57c00; /* Laranja mais escuro no hover */
+  background: #f57c00;
+  /* Laranja mais escuro no hover */
 }
 
 /* Indicador verde à esquerda dos campos de input */
 .field-indicatorAPAGUE_AQUI_PARA VOLTAR A FUNCIONAR {
   position: absolute;
-  left: 0; /* Ou o valor que você definiu */
-  top: 0px; /* Experimente valores maiores para baixar */
-  height: calc(100% - 0px); /* Ajuste a altura para compensar o top */
+  left: 0;
+  /* Ou o valor que você definiu */
+  top: 0px;
+  /* Experimente valores maiores para baixar */
+  height: calc(100% - 0px);
+  /* Ajuste a altura para compensar o top */
   width: 6px;
   background: #00814d;
   border-radius: 100px 0 0 100px;
@@ -29,19 +34,28 @@
 
 /* Estilo de foco nos inputs */
 .focus-style:focus {
-  border-color: #00814d; /* Borda verde ao focar */
-  box-shadow: 0 0 0 2px rgba(0, 129, 77, 0.2); /* Sombra suave verde */
+  border-color: #00814d;
+  /* Borda verde ao focar */
+  box-shadow: 0 0 0 2px rgba(0, 129, 77, 0.2);
+  /* Sombra suave verde */
 }
 
 /* Badge de status "PROCESSADO" */
 .status-badge {
-  background: #ff9800; /* Fundo laranja */
-  color: white;        /* Texto branco */
-  padding: 5px 15px;   /* Espaçamento interno */
-  border-radius: 20px; /* Borda arredondada */
-  font-weight: bold;   /* Texto em negrito */
-  font-size: 0.8rem;   /* Tamanho pequeno */
-  display: inline-block; /* Exibe como bloco inline */
+  background: #ff9800;
+  /* Fundo laranja */
+  color: white;
+  /* Texto branco */
+  padding: 5px 15px;
+  /* Espaçamento interno */
+  border-radius: 20px;
+  /* Borda arredondada */
+  font-weight: bold;
+  /* Texto em negrito */
+  font-size: 0.8rem;
+  /* Tamanho pequeno */
+  display: inline-block;
+  /* Exibe como bloco inline */
 }
 
 /* Spinner (carregando) */
@@ -49,10 +63,14 @@
   width: 40px;
   height: 40px;
   margin: 0 auto;
-  border: 4px solid rgba(0, 0, 0, 0.1); /* Borda cinza clara */
-  border-left-color: #00814d; /* Borda da esquerda verde */
-  border-radius: 50%;         /* Formato circular */
-  animation: spin 1s linear infinite; /* Animação de rotação infinita */
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  /* Borda cinza clara */
+  border-left-color: #00814d;
+  /* Borda da esquerda verde */
+  border-radius: 50%;
+  /* Formato circular */
+  animation: spin 1s linear infinite;
+  /* Animação de rotação infinita */
 }
 
 /* Animação de rotação para o spinner */
@@ -60,6 +78,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -71,8 +90,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Efeito hover para linhas da tabela */
@@ -82,12 +106,14 @@ tbody tr {
 
 /* Cor de fundo ao passar o mouse na linha da tabela */
 tbody tr:hover {
-  background-color: #f0f9f5; /* Verde bem claro */
+  background-color: #f0f9f5;
+  /* Verde bem claro */
 }
 
 /* Linha lateral esquerda nas tabelas para dar destaque */
 tbody tr td:first-child {
-  border-left: 3px solid transparent; /* Padrão: sem borda */
+  border-left: 3px solid transparent;
+  /* Padrão: sem borda */
 }
 
 /* Linha lateral verde quando passa o mouse */
@@ -98,8 +124,10 @@ tbody tr:hover td:first-child {
 /* Estilo para botão de carregamento */
 .btn-loading {
   position: relative;
-  pointer-events: none; /* Impede cliques durante carregamento */
-  opacity: 0.8;         /* Deixa o botão levemente transparente */
+  pointer-events: none;
+  /* Impede cliques durante carregamento */
+  opacity: 0.8;
+  /* Deixa o botão levemente transparente */
 }
 
 /* Spinner pequeno no botão de carregando */
@@ -118,20 +146,52 @@ tbody tr:hover td:first-child {
 /* Responsividade para telas menores (até 640px) */
 @media (max-width: 640px) {
   #resultadoConsulta {
-    margin-top: 1rem; /* Reduz margem no mobile */
+    margin-top: 1rem;
+    /* Reduz margem no mobile */
   }
 
   .grid {
-    gap: 1rem; /* Reduz espaçamento entre colunas */
+    gap: 1rem;
+    /* Reduz espaçamento entre colunas */
   }
 
-  th, td {
-    padding: 0.5rem; /* Reduz espaçamento interno das células */
+  th,
+  td {
+    padding: 0.5rem;
+    /* Reduz espaçamento interno das células */
   }
 
   /* Ajusta o tamanho da fonte do título no header */
   header h1 {
     font-size: 1.2rem;
+  }
+
+  #modalSolicitacao>div {
+    max-width: 100vw !important;
+    width: 100vw !important;
+    min-width: 0;
+    padding: 0.5rem !important;
+    box-sizing: border-box;
+  }
+
+  #formularioLogin {
+    max-width: 100vw !important;
+    width: 100vw !important;
+    min-width: 0;
+    padding: 0.5rem !important;
+    box-sizing: border-box;
+  }
+
+  #modalSolicitacao form {
+    max-width: 100vw !important;
+    width: 100vw !important;
+    min-width: 0;
+  }
+
+  .flex-col>button,
+  .flex-col>.green-button {
+    width: 100% !important;
+    min-width: 0;
   }
 }
 
@@ -140,8 +200,10 @@ tbody tr:hover td:first-child {
   background: #00814d;
   transition: all 0.3s ease;
 }
+
 .green-button:hover {
-  background: #006e42; /* Verde mais escuro no hover */
+  background: #006e42;
+  /* Verde mais escuro no hover */
 }
 
 /* Estilo para o modal */
@@ -155,11 +217,12 @@ tbody tr:hover td:first-child {
 }
 
 @keyframes modalFadeIn {
-  from { 
+  from {
     opacity: 0;
     transform: translateY(-20px);
   }
-  to { 
+
+  to {
     opacity: 1;
     transform: translateY(0);
   }
@@ -172,7 +235,7 @@ input[readonly] {
 }
 
 /* Ajuste para o indicador de campo em textareas */
-textarea + .field-indicator {
+textarea+.field-indicator {
   height: calc(100% - 8px);
   top: 4px;
 }
