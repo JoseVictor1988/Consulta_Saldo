@@ -177,6 +177,9 @@ tbody tr:hover td:first-child {
   }
 
   #formularioLogin {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
     padding: 0.5rem !important;
   }
 
