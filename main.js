@@ -321,7 +321,7 @@ const configSolicitacao = {
     'RSU-TONELADA': 102.91   // R$ 102,91,00 por tonelada
   },
   // Número de WhatsApp do atendimento (para onde será enviada a solicitação)
-  whatsappAtendimento: '5562994114870', // Substitua pelo número real
+  whatsappAtendimento: '556235243410', // Substitua pelo número real
   // Email de atendimento (alternativa)
   emailAtendimento: 'Sem definição ainda'// Substitua pelo email real
 };
