@@ -15,17 +15,17 @@
 }
 
 /* Indicador verde à esquerda dos campos de input */
-.field-indicatorAPAGUE_AQUI_PARA VOLTAR A FUNCIONAR {
+/* Corrigido o nome da classe */
+.field-indicator {
   position: absolute;
-  left: 0; /* Ou o valor que você definiu */
-  top: 0px; /* Experimente valores maiores para baixar */
-  height: calc(100% - 0px); /* Ajuste a altura para compensar o top */
+  left: 0;
+  top: 0; /* Ajustado para 0 */
+  height: 100%; /* Ajustado para 100% */
   width: 6px;
   background: #00814d;
   border-radius: 100px 0 0 100px;
-  margin-left: 0px;
+  margin-left: 0;
 }
-
 
 /* Estilo de foco nos inputs */
 .focus-style:focus {
@@ -33,7 +33,7 @@
   box-shadow: 0 0 0 2px rgba(0, 129, 77, 0.2); /* Sombra suave verde */
 }
 
-/* Badge de status "PROCESSADO" */
+/* Badge de status "PROCESSADO" - Mantido, mas o botão o substitui no HTML/JS */
 .status-badge {
   background: #ff9800; /* Fundo laranja */
   color: white;        /* Texto branco */
@@ -133,6 +133,16 @@ tbody tr:hover td:first-child {
   header h1 {
     font-size: 1.2rem;
   }
+
+  /* Ajusta o padding do modal em telas menores */
+  #modalSolicitacao > div {
+    padding: 1rem;
+  }
+
+  /* Ajusta espaçamento dos botões no modal em telas menores */
+  #formSolicitacao > div.flex.flex-col {
+    space-y: 0.75rem; /* Equivalente a space-y-3 */
+  }
 }
 
 /* Botão verde para solicitações */
@@ -155,11 +165,11 @@ tbody tr:hover td:first-child {
 }
 
 @keyframes modalFadeIn {
-  from { 
+  from {
     opacity: 0;
     transform: translateY(-20px);
   }
-  to { 
+  to {
     opacity: 1;
     transform: translateY(0);
   }
