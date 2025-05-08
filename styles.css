@@ -147,39 +147,37 @@ tbody tr:hover td:first-child {
 @media (max-width: 640px) {
   #resultadoConsulta {
     margin-top: 1rem;
-    /* Reduz margem no mobile */
   }
 
   .grid {
     gap: 1rem;
-    /* Reduz espaçamento entre colunas */
   }
 
   th,
   td {
     padding: 0.5rem;
-    /* Reduz espaçamento interno das células */
   }
 
-  /* Ajusta o tamanho da fonte do título no header */
-  header h1 {
-    font-size: 1.2rem;
-  }
-
+  header,
+  main,
+  #formularioLogin,
   #modalSolicitacao>div {
     max-width: 100vw !important;
     width: 100vw !important;
     min-width: 0;
-    padding: 0.5rem !important;
+    margin: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
     box-sizing: border-box;
   }
 
+  header>div {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
   #formularioLogin {
-    max-width: 100vw !important;
-    width: 100vw !important;
-    min-width: 0;
     padding: 0.5rem !important;
-    box-sizing: border-box;
   }
 
   #modalSolicitacao form {
