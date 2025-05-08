@@ -37,7 +37,7 @@ function inicializarEventos() {
   elements.btnNovaConsulta.addEventListener('click', novaConsulta);
 
   // Permitir consulta pressionando Enter no campo de senha
-  elements.senha.addEventListener('keypress', function(e) {
+  elements.senha.addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
       consultarSaldo();
     }
@@ -335,7 +335,7 @@ const elementosSolicitacao = {
   btnFecharModal: document.getElementById('btnFecharModal'),
   btnCancelarSolicitacao: document.getElementById('btnCancelarSolicitacao'),
   formSolicitacao: document.getElementById('formSolicitacao'),
-  
+
   // Campos do formulário
   empresa: document.getElementById('empresa'),
   documento: document.getElementById('documento'),
@@ -353,19 +353,19 @@ const elementosSolicitacao = {
 function inicializarEventosSolicitacao() {
   // Botão para abrir o modal de solicitação
   elementosSolicitacao.btnSolicitarSaldo.addEventListener('click', abrirModalSolicitacao);
-  
+
   // Botões para fechar o modal
   elementosSolicitacao.btnFecharModal.addEventListener('click', fecharModalSolicitacao);
   elementosSolicitacao.btnCancelarSolicitacao.addEventListener('click', fecharModalSolicitacao);
-  
+
   // Cálculo automático do valor quando muda o tipo ou quantidade
   elementosSolicitacao.tipoSaldo.addEventListener('change', calcularValorSolicitacao);
   elementosSolicitacao.quantidade.addEventListener('input', calcularValorSolicitacao);
-  
+
   // Validação de dados no formulário
   elementosSolicitacao.whatsapp.addEventListener('input', formatarWhatsapp);
   elementosSolicitacao.documento.addEventListener('input', formatarDocumento);
-  
+
   // Submit do formulário
   elementosSolicitacao.formSolicitacao.addEventListener('submit', enviarSolicitacao);
 }
@@ -374,10 +374,14 @@ function inicializarEventosSolicitacao() {
  * Abre o modal de solicitação e preenche dados conhecidos
  */
 function abrirModalSolicitacao() {
+  elementosSolicitacao.modalSolicitacao.classList.remove('hidden');
+  elementosSolicitacao.modalSolicitacao.classList.add('modal-open');
+  document.body.style.overflow = 'hidden'; // trava o fundo
+
   // Preenche o nome da empresa a partir dos dados já carregados
   const nomeCliente = elements.clienteNome.textContent.replace('Cliente: ', '').trim();
   elementosSolicitacao.empresa.value = nomeCliente;
-  
+
   // Limpa outros campos
   elementosSolicitacao.documento.value = '';
   elementosSolicitacao.whatsapp.value = '';
@@ -386,22 +390,15 @@ function abrirModalSolicitacao() {
   elementosSolicitacao.quantidade.value = '';
   elementosSolicitacao.valor.value = '';
   elementosSolicitacao.observacao.value = '';
-  
-  // Exibe o modal com animação
-  elementosSolicitacao.modalSolicitacao.classList.remove('hidden');
-  setTimeout(() => {
-    elementosSolicitacao.modalSolicitacao.classList.add('modal-open');
-  }, 10);
 }
 
 /**
  * Fecha o modal de solicitação
  */
 function fecharModalSolicitacao() {
+  elementosSolicitacao.modalSolicitacao.classList.add('hidden');
   elementosSolicitacao.modalSolicitacao.classList.remove('modal-open');
-  setTimeout(() => {
-    elementosSolicitacao.modalSolicitacao.classList.add('hidden');
-  }, 300);
+  document.body.style.overflow = '';
 }
 
 /**
@@ -410,11 +407,11 @@ function fecharModalSolicitacao() {
 function calcularValorSolicitacao() {
   const tipo = elementosSolicitacao.tipoSaldo.value;
   const quantidade = parseInt(elementosSolicitacao.quantidade.value) || 0;
-  
+
   if (tipo && quantidade > 0) {
     const valorUnitario = configSolicitacao.precos[tipo] || 0;
     const valorTotal = valorUnitario * quantidade;
-    
+
     elementosSolicitacao.valor.value = `R$ ${valorTotal.toFixed(2).replace('.', ',')}`;
   } else {
     elementosSolicitacao.valor.value = '';
@@ -426,11 +423,11 @@ function calcularValorSolicitacao() {
  */
 function formatarWhatsapp() {
   let valor = elementosSolicitacao.whatsapp.value.replace(/\D/g, '');
-  
+
   if (valor.length > 11) {
     valor = valor.substring(0, 11);
   }
-  
+
   if (valor.length > 2) {
     if (valor.length > 7) {
       valor = `(${valor.substring(0, 2)}) ${valor.substring(2, 7)}-${valor.substring(7)}`;
@@ -438,7 +435,7 @@ function formatarWhatsapp() {
       valor = `(${valor.substring(0, 2)}) ${valor.substring(2)}`;
     }
   }
-  
+
   elementosSolicitacao.whatsapp.value = valor;
 }
 
@@ -447,20 +444,20 @@ function formatarWhatsapp() {
  */
 function formatarDocumento() {
   let valor = elementosSolicitacao.documento.value.replace(/\D/g, '');
-  
+
   if (valor.length > 14) {
     valor = valor.substring(0, 14);
   }
-  
+
   // Formatação de CNPJ
   if (valor.length > 11) {
     valor = valor.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
-  } 
+  }
   // Formatação de CPF
   else if (valor.length > 9) {
     valor = valor.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
   }
-  
+
   elementosSolicitacao.documento.value = valor;
 }
 
@@ -469,24 +466,24 @@ function formatarDocumento() {
  */
 function enviarSolicitacao(event) {
   event.preventDefault();
-  
+
   // Validação básica
   const campos = [
-    {campo: elementosSolicitacao.documento, nome: 'CNPJ/CPF'},
-    {campo: elementosSolicitacao.whatsapp, nome: 'WhatsApp'},
-    {campo: elementosSolicitacao.email, nome: 'E-mail'},
-    {campo: elementosSolicitacao.tipoSaldo, nome: 'Tipo de Saldo'},
-    {campo: elementosSolicitacao.quantidade, nome: 'Quantidade'}
+    { campo: elementosSolicitacao.documento, nome: 'CNPJ/CPF' },
+    { campo: elementosSolicitacao.whatsapp, nome: 'WhatsApp' },
+    { campo: elementosSolicitacao.email, nome: 'E-mail' },
+    { campo: elementosSolicitacao.tipoSaldo, nome: 'Tipo de Saldo' },
+    { campo: elementosSolicitacao.quantidade, nome: 'Quantidade' }
   ];
-  
-  for (const {campo, nome} of campos) {
+
+  for (const { campo, nome } of campos) {
     if (!campo.value.trim()) {
       mostrarMensagem(`Por favor, preencha o campo ${nome}`, 'error');
       campo.focus();
       return;
     }
   }
-  
+
   // Valida formato de email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(elementosSolicitacao.email.value)) {
@@ -494,13 +491,13 @@ function enviarSolicitacao(event) {
     elementosSolicitacao.email.focus();
     return;
   }
-  
+
   // Prepara o texto da mensagem
   const mensagem = criarMensagemSolicitacao();
-  
+
   // Envia para WhatsApp (abrir link)
   enviarParaWhatsApp(mensagem);
-  
+
   // Fecha o modal e exibe confirmação
   fecharModalSolicitacao();
   mostrarMensagem('Solicitação enviada com sucesso! Redirecionando para WhatsApp...', 'success');
@@ -513,7 +510,7 @@ function criarMensagemSolicitacao() {
   const tipoTexto = elementosSolicitacao.tipoSaldo.value;
   const quantidade = elementosSolicitacao.quantidade.value;
   const valorTotal = elementosSolicitacao.valor.value;
-  
+
   return `*NOVA SOLICITAÇÃO DE SALDO*
 ----------------------------
 *Empresa:* ${elementosSolicitacao.empresa.value}
@@ -537,7 +534,7 @@ function criarMensagemSolicitacao() {
 function enviarParaWhatsApp(mensagem) {
   const mensagemCodificada = encodeURIComponent(mensagem);
   const whatsappLink = `https://wa.me/${configSolicitacao.whatsappAtendimento}?text=${mensagemCodificada}`;
-  
+
   // Abre o link do WhatsApp em uma nova janela
   window.open(whatsappLink, '_blank');
 }
@@ -547,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Mantém a inicialização de eventos existente e adiciona a nova
   inicializarEventos();
   inicializarEventosSolicitacao();
-  
+
   // Substitui a badge "PROCESSADO" pelo botão (caso o DOM já esteja carregado)
   const statusBadge = document.querySelector('.status-badge');
   if (statusBadge) {
