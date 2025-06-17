@@ -249,3 +249,66 @@ textarea+.field-indicator {
   max-height: 90vh;
   overflow-y: auto;
 }
+
+/* Estilo para o modal */
+#modalSolicitacao {
+  transition: all 0.3s ease;
+}
+
+/* Animação de entrada do modal */
+.modal-open {
+  animation: modalFadeIn 0.3s ease forwards;
+}
+
+@keyframes modalFadeIn {
+  from { 
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilo para campos desabilitados/somente leitura */
+input[readonly] {
+  background-color: #f8f8f8;
+  color: #555;
+}
+
+/* Ajuste para o indicador de campo em textareas */
+textarea + .field-indicator {
+  height: calc(100% - 8px);
+  top: 4px;
+}
+
+/* Estilos para os alertas de débito */
+.alerta-debito-overlay {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Estilo adicional para o botão de confirmação nos alertas */
+#btnConfirmar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Efeito de pulsação para ícones de alerta */
+@keyframes pulse-animation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.fa-exclamation-triangle, 
+.fa-bell {
+  animation: pulse-animation 2s infinite;
+}

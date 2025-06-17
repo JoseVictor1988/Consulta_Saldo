@@ -6,7 +6,9 @@
 // Estado global da aplicação
 const state = {
   dadosCompletos: [], // Guarda os dados completos vindos da consulta
-  isLoading: false    // Controle de carregamento
+  isLoading: false,    // Controle de carregamento
+  loggedInUser: null, // Novo: Guarda os dados do usuário logado (usuario, cliente)
+  logoutTimer: null // Novo: Para o timeout de inatividade
 };
 
 // Elementos do DOM (página HTML)
@@ -23,7 +25,21 @@ const elements = {
   saldoCacamba: document.getElementById('saldoCacamba'),// Saldo de caçambas
   saldoTonelada: document.getElementById('saldoTonelada'),// Saldo de toneladas
   tabelaResultados: document.getElementById('tabelaResultados'), // Tabela de resultados
-  loadingOverlay: document.getElementById('loadingOverlay') // Tela de carregamento
+  loadingOverlay: document.getElementById('loadingOverlay'), // Tela de carregamento
+  // Novos elementos para Consulta de Descarte
+  formularioConsultaBoleto: document.getElementById('formularioConsultaBoleto'),
+  inputBoletoConsulta: document.getElementById('inputBoletoConsulta'),
+  btnConsultarBoleto: document.getElementById('btnConsultarBoleto'),
+  resultadoDescarte: document.getElementById('resultadoDescarte'),
+  clienteDescarteNome: document.getElementById('clienteDescarteNome'),
+  boletoNumeroDescarte: document.getElementById('boletoNumeroDescarte'),
+  dataGeracaoDescarte: document.getElementById('dataGeracaoDescarte'),
+  tabelaDescartes: document.getElementById('tabelaDescartes'),
+  divBotaoConsultaDescarte: document.getElementById('divBotaoConsultaDescarte'),
+  btnAcessarConsultaDescarte: document.getElementById('btnAcessarConsultaDescarte'),
+  btnNovaConsultaDescarte: document.getElementById('btnNovaConsultaDescarte'),
+  btnSair: document.getElementById('btnSair'), // Novo botão Sair
+  btnVoltarConsultaBoleto: document.getElementById('btnVoltarConsultaBoleto') // Novo botão Voltar
 };
 
 // Inicializar eventos ao carregar a página
@@ -31,30 +47,211 @@ document.addEventListener('DOMContentLoaded', () => {
   inicializarEventos();
 });
 
+// CORREÇÃO: Chama a função para inicializar os elementos do alerta de débito
+if (window.alertaDebito && typeof window.alertaDebito.inicializar === 'function') {
+  window.alertaDebito.inicializar();
+} else {
+  console.error("Módulo alertaDebito ou função inicializar não encontrados. Verifique se o script alerta-debito-popup.js foi carregado corretamente.");
+}
+
 // Função para inicializar os eventos
 function inicializarEventos() {
   elements.btnConsultar.addEventListener('click', consultarSaldo);
-  elements.btnNovaConsulta.addEventListener('click', novaConsulta);
-
-  // Permitir consulta pressionando Enter no campo de senha
+  // Ação para o botão "Nova Consulta" na tela de saldo (agora apenas reinicia a consulta de saldo sem deslogar)
+  if (elements.btnNovaConsulta) {
+    elements.btnNovaConsulta.addEventListener('click', reiniciarConsultaSaldo);
+  }
   elements.senha.addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
       consultarSaldo();
     }
   });
+
+  // Novos eventos para a consulta de descarte
+  if (elements.btnConsultarBoleto) {
+    elements.btnConsultarBoleto.addEventListener('click', () => consultarDescartesPorBoleto());
+    elements.inputBoletoConsulta.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        consultarDescartesPorBoleto();
+      }
+    });
+  }
+
+  if (elements.btnAcessarConsultaDescarte) {
+    elements.btnAcessarConsultaDescarte.addEventListener('click', mostrarFormularioConsultaBoleto);
+  }
+
+  if (elements.btnNovaConsultaDescarte) {
+    elements.btnNovaConsultaDescarte.addEventListener('click', novaConsultaDescarte);
+  }
+
+  // Novo evento para o botão Sair
+  if (elements.btnSair) {
+    elements.btnSair.addEventListener('click', logout);
+  }
+
+  // Novo evento para o botão Voltar na consulta de boleto
+  if (elements.btnVoltarConsultaBoleto) {
+    elements.btnVoltarConsultaBoleto.addEventListener('click', retornarAoSaldo);
+  }
+
+  // Eventos para detectar inatividade
+  document.body.addEventListener('mousemove', resetLogoutTimer);
+  document.body.addEventListener('keypress', resetLogoutTimer);
+  document.body.addEventListener('click', resetLogoutTimer);
+
+  // NOVO: Verifica se há usuário logado na sessão ao carregar a página
+  loginPersistente();
+}
+
+/**
+ * NOVO: Reinicia a consulta de saldo, mantendo o usuário logado.
+ * Limpa os resultados exibidos e retorna para o estado inicial da consulta de saldo.
+ */
+function reiniciarConsultaSaldo() {
+  elements.resultadoConsulta.classList.remove('fade-in'); // Remove fade-in para que reapplique
+  elements.formularioConsultaBoleto.classList.add('hidden');
+  elements.resultadoDescarte.classList.add('hidden');
+  elements.divBotaoConsultaDescarte.classList.remove('hidden'); // Reexibe o botão de consultar descartes
+  elements.btnSair.classList.remove('hidden'); // Garante que o botão Sair esteja visível
+
+  // Limpar os dados da tabela de resultados e tentar recarregar se o usuário estiver logado
+  elements.tabelaResultados.innerHTML = `
+      <tr>
+        <td colspan="5" class="text-center py-6 text-gray-500">
+          <i class="fas fa-info-circle mr-2"></i> Nenhum resultado encontrado. Realize uma nova consulta ou clique em um boleto.
+        </td>
+      </tr>
+  `;
+  elements.saldoCacamba.textContent = '-';
+  elements.saldoTonelada.textContent = '-';
+
+  // Se o usuário estiver logado, tenta refazer a consulta de saldo
+  if (state.loggedInUser) {
+    consultarSaldo();
+  }
+
+  // Oculta o formulário de login e exibe a área de resultados
+  elements.form.classList.add('hidden');
+  elements.resultadoConsulta.classList.remove('hidden');
+  elements.resultadoConsulta.classList.add('fade-in');
+
+  // Mantém os dados do cliente e a data de geração, se o usuário já estiver logado
+  if (state.loggedInUser) {
+    elements.clienteNome.textContent = `Cliente: ${state.loggedInUser.cliente || '-'}`;
+    elements.clienteUsuario.textContent = `Usuário: ${state.loggedInUser.usuario || '-'}`;
+    const dataAtual = new Date();
+    const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+    elements.dataGeracao.textContent = `• Gerado em ${dataAtual.toLocaleDateString('pt-BR', options)}`;
+  } else {
+      // Caso não esteja logado, o que não deveria acontecer se esta função for chamada
+      // após o login, mas como fallback, limpa.
+      elements.clienteNome.textContent = `Cliente: -`;
+      elements.clienteUsuario.textContent = `Usuário: -`;
+      elements.dataGeracao.textContent = `• Gerado em -`;
+  }
+  resetLogoutTimer(); // Reseta o timer de inatividade
+}
+
+/**
+ * NOVO: Realiza o logout do usuário.
+ */
+function logout() {
+  sessionStorage.removeItem('loggedInUser');
+  state.loggedInUser = null;
+  clearTimeout(state.logoutTimer); // Limpa o timer de inatividade
+  state.logoutTimer = null;
+
+  elements.form.classList.remove('hidden');
+  elements.resultadoConsulta.classList.add('hidden');
+  elements.formularioConsultaBoleto.classList.add('hidden');
+  elements.resultadoDescarte.classList.add('hidden');
+  elements.divBotaoConsultaDescarte.classList.add('hidden');
+  elements.btnSair.classList.add('hidden'); // Esconde o botão Sair
+
+  elements.usuario.value = '';
+  elements.senha.value = '';
+  elements.usuario.focus();
+
+  mostrarMensagem('Sessão encerrada com sucesso!', 'info');
+}
+
+/**
+ * NOVO: Reseta o temporizador de inatividade.
+ */
+function resetLogoutTimer() {
+  clearTimeout(state.logoutTimer);
+  // Define o tempo para 10 minutos (600.000 milissegundos)
+  state.logoutTimer = setTimeout(logout, 600000);
+}
+
+/**
+ * NOVO: Tenta logar o usuário automaticamente se houver dados na sessionStorage.
+ */
+function loginPersistente() {
+  const storedUser = sessionStorage.getItem('loggedInUser');
+  if (storedUser) {
+    try {
+      const userData = JSON.parse(storedUser);
+      state.loggedInUser = userData;
+      // Assume que se há dados de usuário, ele já está logado
+      elements.form.classList.add('hidden');
+      elements.resultadoConsulta.classList.remove('hidden');
+      elements.resultadoConsulta.classList.add('fade-in');
+      elements.btnSair.classList.remove('hidden'); // Mostra o botão Sair
+      elements.divBotaoConsultaDescarte.classList.remove('hidden'); // Mostra o botão de consulta de descarte
+
+      // Preenche as informações do cliente na tela de saldo
+      elements.clienteNome.textContent = `Cliente: ${state.loggedInUser.cliente || '-'}`;
+      elements.clienteUsuario.textContent = `Usuário: ${state.loggedInUser.usuario || '-'}`;
+      const dataAtual = new Date();
+      const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+      elements.dataGeracao.textContent = `• Gerado em ${dataAtual.toLocaleDateString('pt-BR', options)}`;
+
+      // Inicia o temporizador de inatividade
+      resetLogoutTimer();
+
+      // Opcional: Se quiser que ele faça uma nova consulta de saldo automaticamente ao persistir o login
+      // consultarSaldo(true); // Passe um flag para indicar que é uma consulta inicial sem credenciais de form
+
+    } catch (e) {
+      console.error('Erro ao parsear dados do usuário da sessionStorage:', e);
+      sessionStorage.removeItem('loggedInUser'); // Limpa dados corrompidos
+      logout();
+    }
+  } else {
+    // Se não há usuário logado, garante que o formulário de login esteja visível
+    elements.form.classList.remove('hidden');
+    elements.resultadoConsulta.classList.add('hidden');
+    elements.formularioConsultaBoleto.classList.add('hidden');
+    elements.resultadoDescarte.classList.add('hidden');
+    elements.divBotaoConsultaDescarte.classList.add('hidden');
+    elements.btnSair.classList.add('hidden');
+  }
 }
 
 /**
  * Função principal para consultar o saldo
  */
 function consultarSaldo() {
-  const usuario = elements.usuario.value.trim();
-  const senha = elements.senha.value.trim();
+  let usuario, senha;
 
-  // Validação simples de preenchimento
-  if (!usuario || !senha) {
-    mostrarMensagem('Por favor, preencha todos os campos!', 'error');
-    return;
+  // Se já tem usuário logado, usa os dados da sessão
+  if (state.loggedInUser) {
+    usuario = state.loggedInUser.usuario;
+    senha = state.loggedInUser.senha; // Assumindo que a senha também pode ser armazenada para reconsultas automáticas.
+                                      // CUIDADO: Armazenar senha é sensível. Considere alternativas como tokens.
+                                      // Para este exemplo, seguindo a lógica de 'continuar conectado', a manterei.
+  } else {
+    // Se não está logado, pega do formulário
+    usuario = elements.usuario.value.trim();
+    senha = elements.senha.value.trim();
+
+    // Validação simples de preenchimento
+    if (!usuario || !senha) {
+      mostrarMensagem('Por favor, preencha todos os campos!', 'error');
+      return;
+    }
   }
 
   iniciarCarregamento();
@@ -84,7 +281,26 @@ function processarResposta(resultado) {
     document.querySelectorAll('script[src*="script.google.com"]').forEach(el => el.remove());
 
     if (!resultado.success) {
-      throw new Error(resultado.error || 'Credenciais inválidas ou erro na consulta');
+      // Se a consulta falhar, e for uma sessão persistente, deslogar.
+      if (state.loggedInUser) {
+        logout();
+        mostrarMensagem('Sessão expirada ou credenciais inválidas. Por favor, faça login novamente.', 'error');
+      } else {
+        throw new Error(resultado.error || 'Credenciais inválidas ou erro na consulta');
+      }
+      return; // Retorna para evitar a execução do restante da função em caso de erro.
+    }
+
+    // Se o login for bem-sucedido ou a consulta for de uma sessão persistente
+    if (!state.loggedInUser) { // Se ainda não está logado na sessão atual
+      // Armazena informações do usuário logado na sessionStorage
+      const userData = {
+        usuario: resultado.data[0].usuario,
+        cliente: resultado.data[0].cliente,
+        senha: elements.senha.value.trim() // Armazena a senha para re-consultas. Considerar segurança!
+      };
+      sessionStorage.setItem('loggedInUser', JSON.stringify(userData));
+      state.loggedInUser = userData;
     }
 
     // Atualiza estado com dados recebidos
@@ -94,6 +310,8 @@ function processarResposta(resultado) {
     elements.form.classList.add('hidden');
     elements.resultadoConsulta.classList.remove('hidden');
     elements.resultadoConsulta.classList.add('fade-in');
+    elements.divBotaoConsultaDescarte.classList.remove('hidden'); // Mostrar o botão para consultar descartes após a consulta de saldo
+    elements.btnSair.classList.remove('hidden'); // Mostrar o botão Sair
 
     // Atualiza informações do cliente
     const cliente = state.dadosCompletos[0];
@@ -107,6 +325,22 @@ function processarResposta(resultado) {
 
     calcularSaldos(state.dadosCompletos); // Calcula saldo
     exibirResultados(state.dadosCompletos); // Exibe na tabela
+
+    // Inicia/reseta o timer de inatividade
+    resetLogoutTimer();
+
+    // Verificar débitos e exibir alertas se necessário
+    setTimeout(() => {
+      window.alertaDebito.verificar(state.dadosCompletos);
+      // Exibir mensagem do sistema após login bem-sucedido
+      console.log('Tentando exibir mensagem do sistema...');
+      if (typeof window.exibirMensagem === 'function') {
+        console.log('Função exibirMensagem encontrada, chamando...');
+        window.exibirMensagem();
+      } else {
+        console.error('Função exibirMensagem não encontrada!');
+      }
+    }, 1000); // Aumentei o delay para 1 segundo para garantir que tudo esteja carregado
 
     finalizarCarregamento();
 
@@ -187,9 +421,10 @@ function exibirResultados(dados) {
         ? '<i class="fas fa-weight mr-1"></i>'
         : '';
 
+    // Adicionar a classe 'link-boleto' e atributo data-boleto para facilitar a captura do clique
     return `
       <tr class="border-b hover:bg-gray-50 transition-colors">
-        <td class="px-4 py-3 font-medium text-blue-700">${item.boleto || '-'}</td>
+        <td class="px-4 py-3 font-medium text-blue-700 cursor-pointer link-boleto" data-boleto="${item.boleto || ''}">${item.boleto || '-'}</td>
         <td class="px-4 py-3 ${statusClass}">${statusIcon}${item.status || '-'}</td>
         <td class="px-4 py-3">${formatarData(item.dataEmissao) || '-'}</td>
         <td class="px-4 py-3 font-medium">${formatarValor(item.saldo)}</td>
@@ -197,17 +432,176 @@ function exibirResultados(dados) {
       </tr>
     `;
   }).join('');
+
+  // Adiciona o event listener aos boletos na tabela de resultados
+  elements.tabelaResultados.querySelectorAll('.link-boleto').forEach(link => {
+    link.addEventListener('click', (event) => {
+      const numeroBoleto = event.currentTarget.dataset.boleto;
+      if (numeroBoleto) {
+        consultarDescartesPorBoleto(numeroBoleto);
+      }
+    });
+  });
 }
 
 /**
- * Inicia uma nova consulta
+ * Mostra o formulário de consulta de boleto e esconde outras seções de conteúdo
  */
-function novaConsulta() {
-  elements.form.classList.remove('hidden');
+function mostrarFormularioConsultaBoleto() {
+  elements.form.classList.add('hidden');
   elements.resultadoConsulta.classList.add('hidden');
-  elements.usuario.value = '';
-  elements.senha.value = '';
-  elements.usuario.focus();
+  elements.resultadoDescarte.classList.add('hidden');
+  elements.divBotaoConsultaDescarte.classList.add('hidden'); // Esconder o botão ao mudar de tela
+  elements.formularioConsultaBoleto.classList.remove('hidden');
+  elements.formularioConsultaBoleto.classList.add('fade-in');
+  elements.inputBoletoConsulta.value = '';
+  elements.inputBoletoConsulta.focus();
+  resetLogoutTimer(); // Reseta o timer de inatividade
+}
+
+/**
+ * Inicia uma nova consulta de descarte, voltando para o formulário de consulta de boleto
+ */
+function novaConsultaDescarte() {
+  elements.resultadoDescarte.classList.add('hidden');
+  elements.formularioConsultaBoleto.classList.remove('hidden');
+  elements.formularioConsultaBoleto.classList.add('fade-in');
+  elements.inputBoletoConsulta.value = '';
+  elements.inputBoletoConsulta.focus();
+  resetLogoutTimer(); // Reseta o timer de inatividade
+}
+
+/**
+ * Função para consultar o histórico de descartes de um boleto específico
+ */
+function consultarDescartesPorBoleto(numeroBoleto = null) {
+  if (!state.loggedInUser) {
+    mostrarMensagem('Você precisa estar logado para consultar descartes!', 'error');
+    logout(); // Redireciona para o login
+    return;
+  }
+
+  let boleto = numeroBoleto;
+  if (!boleto) {
+    boleto = elements.inputBoletoConsulta.value.trim();
+  }
+
+  if (!boleto) {
+    mostrarMensagem('Por favor, digite o número do boleto!', 'error');
+    return;
+  }
+
+  iniciarCarregamento();
+
+  try {
+    // URL da API para consulta de descartes (VOCÊ PRECISA CONFIGURAR ESTE ENDPOINT!)
+    const urlDescartes = `https://script.google.com/macros/s/AKfycbyTnvMqEjymi5A6QMqE-jmKapbx5obSkK34prPlAXL-VURf5ZTXgiIkK1opMUmv1HRn/exec`;
+
+    const script = document.createElement('script');
+    script.src = `${urlDescartes}?boleto=${encodeURIComponent(boleto)}&usuario=${encodeURIComponent(state.loggedInUser.usuario)}&callback=processarRespostaDescartes`;
+    document.body.appendChild(script);
+
+  } catch (error) {
+    finalizarCarregamento();
+    mostrarMensagem('Erro ao consultar descartes: ' + error.message, 'error');
+  }
+  resetLogoutTimer(); // Reseta o timer de inatividade
+}
+
+/**
+ * Processa a resposta da API de consulta de descartes
+ */
+function processarRespostaDescartes(resultado) {
+  console.log("processarRespostaDescartes: Resultado recebido", resultado); // LOG AQUI
+  try {
+    document.querySelectorAll('script[src*="script.google.com"]').forEach(el => el.remove());
+
+    if (!resultado.success) {
+      console.error("processarRespostaDescartes: Erro no resultado da API", resultado.error); // LOG AQUI
+      throw new Error(resultado.error || 'Nenhum descarte encontrado para este boleto ou credenciais inválidas.');
+    }
+
+    // Validação de segurança: garantir que o boleto pertence ao cliente logado
+    const usuarioLogado = state.loggedInUser.usuario; // Pega do estado da aplicação
+    const descartesDoCliente = resultado.data.filter(item => String(item.usuario).trim() === usuarioLogado);
+    console.log("processarRespostaDescartes: Dados filtrados por usuário logado", descartesDoCliente); // LOG AQUI
+
+    if (descartesDoCliente.length === 0) {
+        mostrarMensagem('Nenhum descarte encontrado para este boleto ou ele não pertence à sua conta.', 'info');
+        finalizarCarregamento();
+        mostrarFormularioConsultaBoleto();
+        return;
+    }
+
+    elements.form.classList.add('hidden');
+    elements.resultadoConsulta.classList.add('hidden');
+    elements.formularioConsultaBoleto.classList.add('hidden');
+    elements.divBotaoConsultaDescarte.classList.add('hidden');
+    elements.resultadoDescarte.classList.remove('hidden');
+    elements.resultadoDescarte.classList.add('fade-in');
+    elements.btnSair.classList.remove('hidden'); // Mostra o botão Sair
+
+    // Atualiza informações do descarte
+    const primeiroDescarte = descartesDoCliente[0];
+    elements.clienteDescarteNome.textContent = `Cliente: ${primeiroDescarte.cliente || '-'}`;
+    elements.boletoNumeroDescarte.textContent = `Nº do Boleto: ${primeiroDescarte.boleto || '-'}`;
+    const dataAtual = new Date();
+    const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+    elements.dataGeracaoDescarte.textContent = `• Gerado em ${dataAtual.toLocaleDateString('pt-BR', options)}`;
+
+    exibirDescartes(descartesDoCliente);
+    console.log("processarRespostaDescartes: Chamando exibirDescartes com", descartesDoCliente); // LOG AQUI
+
+    finalizarCarregamento();
+    resetLogoutTimer(); // Reseta o timer de inatividade
+
+  } catch (error) {
+    console.error("processarRespostaDescartes: Erro geral", error); // LOG AQUI
+    finalizarCarregamento();
+    mostrarMensagem(error.message, 'error');
+  }
+}
+
+/**
+ * Exibe os dados de descarte na tabela de resultados
+ */
+function exibirDescartes(dados) {
+  console.log("exibirDescartes: Dados para exibição", dados); // LOG AQUI
+  if (!dados || dados.length === 0) {
+    console.log("exibirDescartes: Nenhum dado para exibir ou dados vazios."); // LOG AQUI
+    elements.tabelaDescartes.innerHTML = `
+      <tr>
+        <td colspan="5" class="text-center py-6 text-gray-500">
+          <i class="fas fa-info-circle mr-2"></i> Nenhum descarte encontrado para este boleto.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  // Ordena por data (mais recentes primeiro)
+  const dadosOrdenados = [...dados].sort((a, b) => {
+    // Ajuste para combinar data e hora para ordenação precisa
+    const dataA = converterParaData(`${String(a.data).split('T')[0]}T${String(a.horario).split('T')[1]}`);
+    const dataB = converterParaData(`${String(b.data).split('T')[0]}T${String(b.horario).split('T')[1]}`);
+    return dataB - dataA;
+  });
+  console.log("exibirDescartes: Dados ordenados", dadosOrdenados); // LOG AQUI
+
+  elements.tabelaDescartes.innerHTML = dadosOrdenados.map(item => {
+    // LOG do item sendo mapeado para ver a estrutura dos dados
+    console.log("exibirDescartes: Mapeando item", item);
+    return `
+      <tr class="border-b hover:bg-gray-50 transition-colors">
+        <td class="px-4 py-3">${formatarData(item.data) || '-'}</td>
+        <td class="px-4 py-3">${formatarHora(item.horario) || '-'}</td>
+        <td class="px-4 py-3">${item.placa_prefixo || '-'}</td>
+        <td class="px-4 py-3">${item.n_mtr || '-'}</td>
+        <td class="px-4 py-3 font-medium">${formatarValor(item.descarte)}</td>
+      </tr>
+    `;
+  }).join('');
+  console.log("exibirDescartes: HTML da tabela atualizado."); // LOG AQUI
 }
 
 /**
@@ -306,6 +700,24 @@ function converterParaData(dataString) {
     if (data && !isNaN(data)) return data;
   }
   return new Date(NaN);
+}
+
+/**
+ * NOVO: Formata uma string ISO de data/hora (como a de Google Sheets para horas) para exibir apenas a hora.
+ */
+function formatarHora(isoString) {
+  if (!isoString) return '-';
+  try {
+    const date = new Date(isoString);
+    // Assegura que é uma data válida antes de formatar
+    if (isNaN(date.getTime())) return '-';
+
+    const options = { hour: '2-digit', minute: '2-digit', hour12: false };
+    return date.toLocaleTimeString('pt-BR', options);
+  } catch (e) {
+    console.error("Erro ao formatar hora: ", e);
+    return '-';
+  }
 }
 
 // Expor função para JSONP
@@ -551,3 +963,36 @@ document.addEventListener('DOMContentLoaded', () => {
     statusBadge.style.display = 'none';
   }
 });
+
+/**
+ * NOVO: Retorna à tela de consulta de saldo, mantendo o usuário logado.
+ */
+function retornarAoSaldo() {
+  elements.formularioConsultaBoleto.classList.add('hidden'); // Esconde o formulário de boleto
+  elements.resultadoDescarte.classList.add('hidden'); // Esconde o resultado de descarte se estiver visível
+  elements.resultadoConsulta.classList.remove('hidden'); // Mostra a tela de saldo
+  elements.resultadoConsulta.classList.add('fade-in');
+  elements.divBotaoConsultaDescarte.classList.remove('hidden'); // Mostra o botão para consultar descartes
+  elements.btnSair.classList.remove('hidden'); // Garante que o botão Sair esteja visível
+
+  // Se houver dados de saldo em cache, exibe-os. Caso contrário, a tela ficará vazia (o que é esperado para uma "nova consulta").
+  if (state.dadosCompletos.length > 0) {
+      calcularSaldos(state.dadosCompletos);
+      exibirResultados(state.dadosCompletos);
+  } else if (state.loggedInUser) { // Se está logado mas sem dados, tenta consultar saldo novamente
+      consultarSaldo(); // Tenta carregar os dados do saldo novamente
+  } else {
+      // Caso não haja dados em cache e não esteja logado, reseta a exibição para o estado inicial de "nenhum resultado"
+      elements.saldoCacamba.textContent = '-';
+      elements.saldoTonelada.textContent = '-';
+      elements.tabelaResultados.innerHTML = `
+          <tr>
+            <td colspan="5" class="text-center py-6 text-gray-500">
+              <i class="fas fa-info-circle mr-2"></i> Nenhum resultado encontrado. Realize uma nova consulta ou clique em um boleto.
+            </td>
+          </tr>
+      `;
+  }
+
+  resetLogoutTimer(); // Reseta o timer de inatividade
+}

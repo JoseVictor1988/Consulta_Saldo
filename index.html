@@ -23,6 +23,9 @@
     <div class="mx-auto px-4 flex items-center w-full">
       <i class="fas fa-recycle text-2xl mr-3"></i>
       <h1 class="text-xl font-bold">Sistema de Gestão de Resíduos</h1>
+      <button id="btnSair" class="ml-auto orange-button text-white font-semibold px-4 py-2 rounded hover:bg-orange-500 transition-colors flex items-center text-sm sm:text-base justify-center hidden">
+        <i class="fas fa-sign-out-alt mr-2"></i> Sair
+      </button>
     </div>
   </header>
 
@@ -292,6 +295,87 @@
       </div>
     </div>
 
+    <!-- Resultado da Consulta de Descarte -->
+    <div id="resultadoDescarte" class="max-w-5xl w-full mx-auto mt-8 hidden">
+      <div class="header-gradient text-white p-4 sm:p-6 rounded-t-xl shadow">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+          <div class="mb-4 sm:mb-0">
+            <h2 class="text-xl sm:text-2xl font-bold flex items-center">
+              <i class="fas fa-history mr-2"></i> Histórico de Descartes por Boleto
+            </h2>
+            <p id="clienteDescarteNome" class="mt-2 text-sm sm:text-base">Cliente: -</p>
+            <p id="boletoNumeroDescarte" class="text-sm sm:text-base">Nº do Boleto: -</p>
+            <p id="dataGeracaoDescarte" class="text-xs sm:text-sm mt-1">• Gerado em -</p>
+          </div>
+          <button id="btnNovaConsultaDescarte"
+            class="orange-button text-white font-semibold px-4 py-2 rounded hover:bg-orange-500 transition-colors flex items-center text-sm sm:text-base w-full sm:w-auto justify-center">
+            <i class="fas fa-redo-alt mr-2"></i> Nova Consulta
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white shadow p-4 sm:p-6 rounded-b-xl">
+        <h2 class="text-lg sm:text-xl font-semibold border-b pb-2 mb-4 flex items-center header-text-gradient">
+          <i class="fas fa-list-ul mr-2 text-green-600"></i> Detalhamento de Descartes
+        </h2>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full w-full border text-xs sm:text-sm rounded-lg overflow-hidden">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="text-left px-3 py-2 sm:px-4 sm:py-3 font-semibold">Data</th>
+                <th class="text-left px-3 py-2 sm:px-4 sm:py-3 font-semibold">Horário</th>
+                <th class="text-left px-3 py-2 sm:px-4 sm:py-3 font-semibold">Placa / Prefixo</th>
+                <th class="text-left px-3 py-2 sm:px-4 sm:py-3 font-semibold">Nº MTR</th>
+                <th class="text-left px-3 py-2 sm:px-4 sm:py-3 font-semibold">Descarte</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaDescartes">
+              <!-- Linhas de descarte serão inseridas aqui via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulário de Consulta de Boleto -->
+    <div id="formularioConsultaBoleto"
+      class="w-full sm:max-w-md max-w-full mx-auto bg-white mt-6 p-1 sm:p-8 rounded-xl shadow-lg border-t-4 border-blue-600 hidden">
+      <div class="text-center mb-6">
+        <i class="fas fa-file-invoice text-blue-600 text-4xl mb-2"></i>
+        <h2 class="text-2xl font-bold header-text-gradient">Consulta de Descarte por Boleto</h2>
+        <p class="text-gray-500">Digite o número do boleto para consultar o histórico de descartes</p>
+      </div>
+      <div class="mb-4">
+        <label class="block font-medium mb-1" for="inputBoletoConsulta">Número do Boleto</label>
+        <div class="relative">
+          <div class="field-indicator"></div>
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-receipt"></i>
+          </span>
+          <input id="inputBoletoConsulta" type="text" placeholder="Ex: 43301"
+            class="w-full border border-gray-300 pl-10 px-4 py-2 rounded-lg focus:outline-none focus-style" />
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t">
+        <button id="btnConsultarBoleto"
+          class="w-full orange-button text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center">
+          <i class="fas fa-search mr-2"></i> Consultar Boleto
+        </button>
+        <button id="btnVoltarConsultaBoleto" class="w-full green-button text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center mt-4">
+          <i class="fas fa-arrow-left mr-2"></i> Voltar ao Saldo
+        </button>
+      </div>
+    </div>
+
+    <!-- Botão para alternar para Consulta de Descarte (no resultado da consulta de saldo) -->
+    <div id="divBotaoConsultaDescarte" class="flex justify-center mt-4 hidden">
+      <button id="btnAcessarConsultaDescarte"
+        class="orange-button text-white font-semibold px-4 py-2 sm:px-6 sm:py-2 rounded-full hover:bg-orange-700 transition-colors flex items-center text-sm sm:text-base w-full sm:w-auto justify-center">
+        <i class="fas fa-box-open mr-2"></i> Consultar Descartes
+      </button>
+    </div>
+
   </main>
 
   <!-- Rodapé -->
@@ -310,8 +394,13 @@
     </div>
   </div>
 
+  <!-- Script para alertas de débito -->
+  <script src="alerta-debito.js"></script>
+  
+  <!-- Script para mensagens do sistema -->
+  <script src="alerta-mensagem.js"></script>
+  
   <!-- Script principal -->
   <script src="main.js"></script>
 </body>
-
 </html>
