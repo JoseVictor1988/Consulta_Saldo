@@ -41,27 +41,27 @@ function criarModalMensagem(mensagem, nomeCliente) {
     
     // Criar elementos do modal
     const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
     modal.id = 'modalMensagem';
 
     const modalContent = document.createElement('div');
-    modalContent.className = 'bg-white p-6 rounded-lg shadow-lg w-full max-w-lg mx-4';
+    modalContent.className = 'bg-white rounded-lg shadow-lg w-full max-w-2xl mx-auto flex flex-col max-h-[90vh]';
 
     // Cabeçalho do modal
     const header = document.createElement('div');
-    header.className = 'flex justify-between items-center mb-4 border-b pb-2';
+    header.className = 'flex justify-between items-center p-4 border-b sticky top-0 bg-white rounded-t-lg';
     header.innerHTML = `
         <h3 class="text-xl font-bold header-text-gradient flex items-center">
             <i class="fas fa-bell mr-2"></i>Mensagem Importante
         </h3>
-        <button id="btnFecharMensagem" class="text-gray-500 hover:text-gray-800">
+        <button id="btnFecharMensagem" class="text-gray-500 hover:text-gray-800 transition-colors">
             <i class="fas fa-times text-xl"></i>
         </button>
     `;
 
     // Conteúdo da mensagem
     const content = document.createElement('div');
-    content.className = 'mb-6 text-base leading-relaxed whitespace-pre-line';
+    content.className = 'p-4 text-base leading-relaxed whitespace-pre-line overflow-y-auto flex-grow';
     
     // Personalizar mensagem com o nome do cliente
     let mensagemPersonalizada = mensagem;
@@ -75,12 +75,11 @@ function criarModalMensagem(mensagem, nomeCliente) {
     
     // Processar links de WhatsApp e localização
     const mensagemFormatada = processarLinks(mensagemPersonalizada);
-    // Permitir HTML na mensagem
     content.innerHTML = mensagemFormatada;
 
     // Botão de confirmação
     const footer = document.createElement('div');
-    footer.className = 'flex justify-end';
+    footer.className = 'flex justify-end p-4 border-t sticky bottom-0 bg-white rounded-b-lg';
     footer.innerHTML = `
         <button id="btnConfirmarMensagem" class="green-button text-white font-semibold px-6 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center">
             <i class="fas fa-check mr-2"></i> Li e Entendi
